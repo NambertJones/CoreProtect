@@ -241,6 +241,10 @@ public final class InventoryChangeListener extends Queue implements Listener {
                     HopperTransactionUtils.registerSnapshot(transactingChestId, loggingChestId, false);
                 }
             }
+            else if (batchItem != null) {
+                // this move is merged into the pending batch, so the batch must also cover it
+                HopperTransactionUtils.advanceSnapshot(transactingChestId, loggingChestId);
+            }
         }
         else {
             List<ItemStack[]> list = new ArrayList<>();

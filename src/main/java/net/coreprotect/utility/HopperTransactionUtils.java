@@ -100,6 +100,28 @@ public final class HopperTransactionUtils {
         }
     }
 
+    /**
+     * Extends the newest pending snapshot so that it also covers every change recorded so far. Used when another
+     * hopper/dropper move is merged into an existing batch, so those moves are not rolled back out of the batch.
+     */
+    public static void advanceSnapshot(String transactionId, String loggingId) {
+        PendingTransaction transaction = pendingTransactions.get(transactionId);
+        if (transaction == null) {
+            return;
+        }
+
+        synchronized (transaction) {
+            Deque<Long> marks = transaction.ownerMarks.get(loggingId);
+            if (marks == null || marks.isEmpty()) {
+                return;
+            }
+
+            marks.pollLast();
+            marks.addLast(transaction.nextSeq);
+            transaction.lastMarkSeq = transaction.nextSeq;
+        }
+    }
+
     public static long peekSnapshotMark(String transactionId, String loggingId) {
         return getSnapshotMark(transactionId, loggingId, 0);
     }
